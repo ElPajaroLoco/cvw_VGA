@@ -61,14 +61,21 @@ module uncore import cvw::*;  #(parameter cvw_t P)(
   input  logic                 SDCIn,
   output logic                 SDCCmd,
   output logic [3:0]           SDCCS,
-  output logic                 SDCCLK
+  output logic                 SDCCLK,
+  // display_apb(VGA)
+  input logic                 VGA_CLK,  // VGA clock
+  output logic                VGA_HS_O, // Horizontal Sync
+  output logic                VGA_VS_O, // Vertical Sync
+  output logic [3:0]          VGA_R,    // Red Channel
+  output logic [3:0]          VGA_G,    // Green Channel
+  output logic [3:0]          VGA_B     // Blue Channel
 );
 
   logic [P.XLEN-1:0]           HREADRam, HREADSDC;
 
-  logic [11:0]                 HSELRegions;
-  logic                        HSELDTIM, HSELIROM, HSELRam, HSELCLINT, HSELPLIC, HSELGPIO, HSELUART,HSELSDC, HSELSPI;
-  logic                        HSELDTIMD, HSELIROMD, HSELEXTD, HSELRamD, HSELCLINTD, HSELPLICD, HSELGPIOD, HSELUARTD, HSELSDCD, HSELSPID;
+  logic [12:0]                 HSELRegions;
+  logic                        HSELDTIM, HSELIROM, HSELRam, HSELCLINT, HSELPLIC, HSELGPIO, HSELUART,HSELSDC, HSELSPI, HSELDISP;
+  logic                        HSELDTIMD, HSELIROMD, HSELEXTD, HSELRamD, HSELCLINTD, HSELPLICD, HSELGPIOD, HSELUARTD, HSELSDCD, HSELSPID, HSELDISPD;
   logic                        HRESPRam,  HRESPSDC;
   logic                        HREADYRam, HRESPSDCD;
   logic [P.XLEN-1:0]           HREADBootRom;
@@ -78,13 +85,13 @@ module uncore import cvw::*;  #(parameter cvw_t P)(
   logic                        SDCIntM;
 
   logic                        PCLK, PRESETn, PWRITE, PENABLE;
-  logic [5:0]                  PSEL;
+  logic [6:0]                  PSEL;
   logic [31:0]                 PADDR;
   logic [P.XLEN-1:0]           PWDATA;
   logic [P.XLEN/8-1:0]         PSTRB;
   /* verilator lint_off UNDRIVEN */ // undriven in rv32e configuration
-  logic [5:0]                  PREADY;
-  logic [5:0][P.XLEN-1:0]      PRDATA;
+  logic [6:0]                  PREADY;
+  logic [6:0][P.XLEN-1:0]      PRDATA;
   /* verilator lint_on UNDRIVEN */
   logic [P.XLEN-1:0]           HREADBRIDGE;
   logic                        HRESPBRIDGE, HREADYBRIDGE, HSELBRIDGE, HSELBRIDGED;
@@ -98,14 +105,14 @@ module uncore import cvw::*;  #(parameter cvw_t P)(
   adrdecs #(P) adrdecs(HADDR, 1'b1, 1'b1, 1'b1, HSIZE[1:0], HSELRegions);
 
   // unswizzle HSEL signals
-  assign {HSELSPI, HSELSDC, HSELPLIC, HSELUART, HSELGPIO, HSELCLINT, HSELRam, HSELBootRom, HSELEXT, HSELIROM, HSELDTIM} = HSELRegions[11:1];
+  assign {HSELDISP, HSELSPI, HSELSDC, HSELPLIC, HSELUART, HSELGPIO, HSELCLINT, HSELRam, HSELBootRom, HSELEXT, HSELIROM, HSELDTIM} = HSELRegions[12:1];
 
   // AHB -> APB bridge
-  ahbapbbridge #(P, 6) ahbapbbridge (
+  ahbapbbridge #(P, 7) ahbapbbridge (
     .HCLK, .HRESETn, .HSEL({HSELSDC, HSELSPI, HSELUART, HSELPLIC, HSELCLINT, HSELGPIO}), .HADDR, .HWDATA, .HWSTRB, .HWRITE, .HTRANS, .HREADY,
     .HRDATA(HREADBRIDGE), .HRESP(HRESPBRIDGE), .HREADYOUT(HREADYBRIDGE),
     .PCLK, .PRESETn, .PSEL, .PWRITE, .PENABLE, .PADDR, .PWDATA, .PSTRB, .PREADY, .PRDATA);
-  assign HSELBRIDGE = HSELGPIO | HSELCLINT | HSELPLIC | HSELUART | HSELSPI | HSELSDC; // if any of the bridge signals are selected
+  assign HSELBRIDGE = HSELDISP | HSELGPIO | HSELCLINT | HSELPLIC | HSELUART | HSELSPI | HSELSDC; // if any of the bridge signals are selected
 
   // on-chip RAM
   if (P.UNCORE_RAM_SUPPORTED) begin : ram
@@ -175,6 +182,17 @@ module uncore import cvw::*;  #(parameter cvw_t P)(
     assign SDCCmd = '0; assign SDCCS = 4'b0; assign SDCIntr = 1'b0; assign SDCCLK = 1'b0;
   end
 
+  if (P.DISP_SUPPORTED == 1) begin : VGA_display
+      display_apb #(P) display_apb(
+        .PCLK, .PRESETn, .PSEL(PSEL[6]), .PADDR(PADDR[3:0]),
+        .PWDATA, .PSTRB, .PWRITE, .PENABLE,
+        .PREADY(PREADY[6]), .PRDATA(PRDATA[6]),
+        .VGA_HS_O(VGA_HS_O), .VGA_VS_O(VGA_VS_O), .VGA_R(VGA_R), .VGA_G(VGA_G), .VGA_B(VGA_B), .VGA_CLK);
+    end else begin: VGA_display
+        assign VGA_HS_O = 1'b0; assign VGA_VS_O = 1'b0;
+        assign VGA_R = '0; assign VGA_G = '0; assign VGA_B = '0;
+  end
+
 
   // AHB Read Multiplexer
   assign HRDATA = ({P.XLEN{HSELRamD}} & HREADRam) |
@@ -198,8 +216,8 @@ module uncore import cvw::*;  #(parameter cvw_t P)(
   // takes more than 1 cycle to respond it needs to hold on to the old select until the
   // device is ready.  Hence this register must be selectively enabled by HREADY.
   // However on reset None must be selected.
-  flopenl #(12) hseldelayreg(HCLK, ~HRESETn, HREADY, HSELRegions, 12'b1,
-    {HSELSPID, HSELSDCD, HSELPLICD, HSELUARTD, HSELGPIOD, HSELCLINTD,
+  flopenl #(13) hseldelayreg(HCLK, ~HRESETn, HREADY, HSELRegions, 12'b1,
+    {HSELDISPD, HSELSPID, HSELSDCD, HSELPLICD, HSELUARTD, HSELGPIOD, HSELCLINTD,
       HSELRamD, HSELBootRomD, HSELEXTD, HSELIROMD, HSELDTIMD, HSELNoneD});
   flopenr #(1) hselbridgedelayreg(HCLK, ~HRESETn, HREADY, HSELBRIDGE, HSELBRIDGED);
 endmodule

@@ -15,10 +15,12 @@ set_property -dict [list CONFIG.PRIM_IN_FREQ {100.000} \
                         CONFIG.CLKOUT2_USED {true} \
                         CONFIG.CLKOUT3_USED {true} \
                         CONFIG.CLKOUT4_USED {true} \
+                        CONFIG.CLKOUT5_USED {true} \
                         CONFIG.CLKOUT1_REQUESTED_OUT_FREQ {166.66667} \
                         CONFIG.CLKOUT2_REQUESTED_OUT_FREQ {200} \
                         CONFIG.CLKOUT3_REQUESTED_OUT_FREQ $SYSTEMCLOCK_MHz \
                         CONFIG.CLKOUT4_REQUESTED_OUT_FREQ {25} \
+                        CONFIG.CLKOUT5_REQUESTED_OUT_FREQ {25} \
                         CONFIG.CLKIN1_JITTER_PS {10.0} \
                        ] [get_ips $ipName]
 

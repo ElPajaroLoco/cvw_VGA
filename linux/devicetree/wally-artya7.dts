@@ -114,5 +114,11 @@
       reg = <0x00 0x2000000 0x00 0x10000>;
       compatible = "sifive,clint0\0riscv,clint0";
     };
+
+    disp@100000 {
+      compatible = "wally,display-apb";
+      reg = <0x00 0x100000 0x00 0x10>;
+    };
+
   };
 };

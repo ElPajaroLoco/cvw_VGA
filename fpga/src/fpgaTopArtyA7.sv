@@ -77,8 +77,19 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 0)
    output logic [0:0]    ddr3_cke,
    output logic [0:0]    ddr3_cs_n,
    output logic [1:0]    ddr3_dm,
-   output logic [0:0]    ddr3_odt
+   output logic [0:0]    ddr3_odt,
+
+   // VGA OUTPUTS
+   output logic       VGA_HS_O,
+   output logic       VGA_VS_O,
+   output logic [3:0] VGA_R,
+   output logic [3:0] VGA_G,
+   output logic [3:0] VGA_B
+
    );
+
+  // VGA Signals
+  logic                VGA_CLK;
 
   // MMCM Signals
   logic          CPUCLK;
@@ -229,6 +240,7 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 0)
                      .clk_out2(clk200),
                      .clk_out3(CPUCLK),
                      .clk_out4(phy_ref_clk),
+                     .clk_out5(VGA_CLK),
                      .reset(1'b0),
                      .locked(mmcm1_locked),
                      .clk_in1(default_100mhz_clk));
@@ -258,7 +270,8 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 0)
                     .HADDR, .HWDATA, .HWSTRB, .HWRITE, .HSIZE, .HBURST, .HPROT,
                     .HTRANS, .HMASTLOCK, .HREADY, .TIMECLK(1'b0),
                     .GPIOIN, .GPIOOUT, .GPIOEN,
-                    .UARTSin, .UARTSout, .SDCIn, .SDCCmd, .SDCCS(SDCCSin), .SDCCLK, .ExternalStall(RVVIStall));
+                    .UARTSin, .UARTSout, .SDCIn, .SDCCmd, .SDCCS(SDCCSin), .SDCCLK, .ExternalStall(RVVIStall),
+                    .VGA_HS_O, .VGA_VS_O, .VGA_R, .VGA_G, .VGA_B, .VGA_CLK);
 
 
   // ahb lite to axi bridge
@@ -616,5 +629,13 @@ module fpgaTop #(parameter logic RVVI_SYNTH_SUPPORTED = 0)
 
   //assign phy_reset_n = ~bus_struct_reset;
    assign phy_reset_n = ~1'b0;
+
+//    VGA VGA(
+//    .CLK_I (VGAclk),
+//    .VGA_HS_O (VGA_HS_O),
+//    .VGA_VS_O (VGA_VS_O),
+//    .VGA_R (VGA_R),
+//    .VGA_B (VGA_B),
+//    .VGA_G (VGA_G));
 
 endmodule

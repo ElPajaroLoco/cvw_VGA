@@ -44,6 +44,12 @@ typedef struct packed {
   int           RAM_LATENCY; // Latency to stress AHB
   logic         BURST_EN; // Support AHB Burst Mode
 
+  // VGA
+  logic DISP_SUPPORTED;
+  logic [63:0] DISP_BASE;
+  logic [63:0] DISP_RANGE;
+
+
   // RISC-V Features
   logic         ZICSR_SUPPORTED;
   logic         ZIFENCEI_SUPPORTED;

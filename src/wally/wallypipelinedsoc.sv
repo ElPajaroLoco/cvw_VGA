@@ -63,7 +63,15 @@ module wallypipelinedsoc import cvw::*; #(parameter cvw_t P)  (
   input  logic                SDCIn,            // SDC DATA[0]     to     SPI DI
   output logic                SDCCmd,           // SDC CMD         from   SPI DO
   output logic [3:0]          SDCCS,            // SDC Card Detect from   SPI CS
-  output logic                SDCCLK            // SDC Clock       from   SPI Clock
+  output logic                SDCCLK,            // SDC Clock       from   SPI Clock
+
+  // VGA
+  input logic                 VGA_CLK,  // VGA clock
+  output logic                VGA_HS_O, // Horizontal Sync
+  output logic                VGA_VS_O, // Vertical Sync
+  output logic [3:0]          VGA_R,    // Red Channel
+  output logic [3:0]          VGA_G,    // Green Channel
+  output logic [3:0]          VGA_B     // Blue Channel
 );
 
   // Uncore signals
@@ -89,7 +97,7 @@ module wallypipelinedsoc import cvw::*; #(parameter cvw_t P)  (
       .HADDR, .HWDATA, .HWSTRB, .HWRITE, .HSIZE, .HBURST, .HPROT, .HTRANS, .HMASTLOCK, .HRDATAEXT,
       .HREADYEXT, .HRESPEXT, .HRDATA, .HREADY, .HRESP, .HSELEXT,
       .MTimerInt, .MSwInt, .MExtInt, .SExtInt, .GPIOIN, .GPIOOUT, .GPIOEN, .UARTSin,
-      .UARTSout, .MTIME_CLINT, .SPIIn, .SPIOut, .SPICS, .SPICLK, .SDCIn, .SDCCmd, .SDCCS, .SDCCLK);
+      .UARTSout, .MTIME_CLINT, .SPIIn, .SPIOut, .SPICS, .SPICLK, .SDCIn, .SDCCmd, .SDCCS, .SDCCLK, .VGA_HS_O, .VGA_VS_O, .VGA_R, .VGA_G, .VGA_B, .VGA_CLK);
   end else begin
     assign {HRDATA, HREADY, HRESP, HSELEXT, MTimerInt, MSwInt, MExtInt, SExtInt,
             MTIME_CLINT, GPIOOUT, GPIOEN, UARTSout, SPIOut, SPICS, SPICLK, SDCCmd, SDCCS, SDCCLK} = '0;

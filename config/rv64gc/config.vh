@@ -27,6 +27,11 @@
 
 `include "BranchPredictorType.vh"
 
+// VGA
+localparam logic DISP_SUPPORTED = 0;
+localparam logic [63:0] DISP_BASE = 64'h00100000;
+localparam logic [63:0] DISP_RANGE = 64'h0010000F;
+
 // RV32 or RV64: XLEN = 32 or 64
 localparam XLEN = 32'd64;
 

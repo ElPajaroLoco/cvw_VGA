@@ -4,6 +4,9 @@
 `include "BranchPredictorType.vh"
 
 localparam cvw_t P = '{
+  DISP_SUPPORTED :       DISP_SUPPORTED,
+  DISP_BASE :            DISP_BASE,
+  DISP_RANGE :           DISP_RANGE,
   XLEN :                 XLEN,
   IEEE754 :              IEEE754,
   MISA :                 MISA,

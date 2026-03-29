@@ -46,6 +46,7 @@ SPI_LOOPBACK_TEST   0
 UART_PRESCALE       32'd0
 PLIC_NUM_SRC        32'd53
 
+
 # fpga is used for FPGA hardware.  It adds the SDC and DDR (EXT_MEM)
 deriv fpga  buildroot
 BOOTROM_PRELOAD     1
@@ -58,6 +59,7 @@ EXT_MEM_RANGE       64'h7FFFFFFF
 SDC_SUPPORTED       1
 PLIC_SDC_ID         32'd20
 BPRED_SIZE          32'd12
+DISP_SUPPORTED      1
 
 deriv fpgaArtyA7 fpga
 EXT_MEM_RANGE       64'h0FFFFFFF

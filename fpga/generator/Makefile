@@ -57,7 +57,8 @@ IP_Arty: $(dst)/sysrst.log \
 	MEM_Arty \
 	$(dst)/mmcm.log \
 	$(dst)/clkconverter.log \
-	$(dst)/ahbaxibridge.log
+	$(dst)/ahbaxibridge.log \
+	$(dst)/clk_wiz_0.log
 
 IP_GENESYS2: $(dst)/sysrst.log \
 	MEM_GENESYS2 \
